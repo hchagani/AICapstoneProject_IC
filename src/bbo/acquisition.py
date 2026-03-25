@@ -46,7 +46,8 @@ def prob_improv(mean: np.ndarray, std: np.ndarray, y_max: float):
     Returns:
         numpy array of PI values for each point.
     """
-    z = (mean - y_max) / (std + 1e-12)
+    std = np.maximum(std, 1e-12)  # avoid division by zero error
+    z = (mean - y_max) / std
 
     return norm.cdf(z)
 
@@ -68,3 +69,24 @@ def clf_prob_improv(
           point.
     """
     return prob * prob_improv(mean, std, y_max)
+
+
+def expect_improv(
+    mean: np.ndarray, std: np.ndarray, y_max: float, xi: float = 0.05
+):
+    """Calculate Expected Improvement (EI).
+
+    Args:
+        mean (np.ndarray): predicted mean values.
+        std (np.ndarray): standard deviations from the predicted mean.
+        y_max (float): maximum output value.
+        xi (float): exploration parameter.
+
+    Returns:
+        numpy array of EI values for each point.
+    """
+    std = np.maximum(std, 1e-12)  # avoid division by zero error
+    improvement = mean - y_max - xi
+    z = improvement / std
+
+    return improvement * norm.cdf(z) + std * norm.pdf(z)
