@@ -52,6 +52,7 @@ def get_reg_model(
     initial_length_scale: float = 0.1,
     length_scale_bounds: tuple[float] = (1e-2, 100),
     nu: float = 1.5,
+    **model_kwargs,
 ) -> GaussianProcessRegressor | None:
     """Get Gaussian Process regression model.
 
@@ -63,6 +64,7 @@ def get_reg_model(
           dimensions.
         length_scale_bounds (tuple): lower and upper bounds for length scale.
         nu (float): smoothness parameter for Matern kernel.
+        model_kwargs: keyword arguments for model.
 
     Returns:
         Gaussian Process regression model.
@@ -86,6 +88,7 @@ def get_reg_model(
         n_restarts_optimizer=10,
         normalize_y=True,
         random_state=create_rng_seed(seed_input),
+        **model_kwargs,
     )
 
     return model
