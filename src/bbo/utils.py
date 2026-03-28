@@ -3,10 +3,19 @@ from typing import Callable
 
 import numpy as np
 from scipy.spatial.distance import cdist
+from scipy.stats import qmc
 from sklearn.gaussian_process import (
     GaussianProcessClassifier,
     GaussianProcessRegressor,
 )
+from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+
+from bbo.acquisition import expect_improv
+from bbo.bayesian_optimisation import get_reg_model
+from bbo.decision_trees import get_ensemble_stats, get_regions
+from bbo.enums import KernelType
+from bbo.random import sample_regions
 
 
 def construct_meshgrid(
@@ -37,7 +46,7 @@ def construct_fine_meshgrid(
     x: np.ndarray,
     grd_res: int,
     limit: float,
-    bounds: tuple[int, int] = (0, 1),
+    bounds: tuple[int, int] | None = None,
 ) -> tuple:
     """Construct fine meshgrid used when zooming in on interesting areas.
 
@@ -54,11 +63,12 @@ def construct_fine_meshgrid(
     axis_arrays = [
         np.linspace(x_dim - 0.5 * limit, x_dim + 0.5 * limit, grd_res) for x_dim in x
     ]
-    clipped_axis_arrays = [
-        np.clip(arr, bounds[0], bounds[1]) for arr in axis_arrays
-    ]
+    if bounds is not None:  # constrain to bounds
+        axis_arrays = [
+            np.clip(arr, b[0], b[1]) for arr, b in zip(axis_arrays, bounds)
+        ]
 
-    return clipped_axis_arrays
+    return axis_arrays
 
 
 def get_farthest_point(
@@ -101,6 +111,7 @@ def grid_search(
     grd_res: int,
     clf_model: GaussianProcessClassifier | None = None,
     bounds: list[tuple] | None = None,
+    take_mean: bool = False,
     **acq_kwargs,
 ) -> np.ndarray:
     """Perform grid search on progressively smaller regions until limit reached.
@@ -116,6 +127,8 @@ def grid_search(
           classification model if applicable.
         bounds (list): list of minimum and maximum bounds for each dimension,
           defaults to 0 and 1.
+        take_mean (bool): use mean of best points rather than a single best
+          point to calculate the centre of the next region.
         acq_kwargs: keyword arguments for acquisition function.
 
     Returns:
@@ -130,7 +143,7 @@ def grid_search(
     Y_mean = y_mean.reshape(meshgrid[0].shape)
     Y_std = y_std.reshape(meshgrid[0].shape)
 
-    if clf_model:  # Find probability if classification model included
+    if clf_model is not None:  # find probability
         y_prob = clf_model.predict_proba(X_pred)
         Y_prob = y_prob[:, 1].reshape(meshgrid[0].shape)
         acq = acq_func(Y_prob, Y_mean, Y_std, **acq_kwargs)
@@ -139,7 +152,7 @@ def grid_search(
 
     # Find range of longest dimension
     max_range = 1
-    if bounds:
+    if bounds is not None:
         max_range = 0
         for b in bounds:
             dim_range = b[1] - b[0]
@@ -152,7 +165,7 @@ def grid_search(
     x_next = np.array([m[max_idx] for m in meshgrid])
 
     while True:
-        meshgrid = construct_fine_meshgrid(x_next, grd_res, limit)
+        meshgrid = construct_fine_meshgrid(x_next, grd_res, limit, bounds)
         ravel_meshgrid = [x.ravel() for x in meshgrid]
         X_pred = np.column_stack(ravel_meshgrid)
 
@@ -160,10 +173,10 @@ def grid_search(
         Y_mean = y_mean.reshape(meshgrid[0].shape)
         Y_std = y_std.reshape(meshgrid[0].shape)
 
-        if clf_model:
+        if clf_model is not None:
             y_prob = clf_model.predict_proba(X_pred)
             Y_prob = y_prob[:, 1].reshape(meshgrid[0].shape)
-            acq = acq_func(Y_mean, Y_std, Y_prob, **acq_kwargs)
+            acq = acq_func(Y_prob, Y_mean, Y_std, **acq_kwargs)
         else:
             acq = acq_func(Y_mean, Y_std, **acq_kwargs)
 
@@ -175,6 +188,73 @@ def grid_search(
             return x_next
 
         limit = limit / (grd_res - 1)
+
+
+def grid_search_mean(
+    model: RandomForestRegressor | ExtraTreesRegressor,
+    acq_func: Callable,
+    n_dimensions: int,
+    grd_res: int,
+    bounds: list[tuple] | None = None,
+    **acq_kwargs,
+) -> np.ndarray:
+    """Perform grid search on progressively smaller regions until limit reached.
+    As decision tree ensemble models are expected to return many points that
+    maximise the acquisition function, the mean position of these points
+    becomes the centre of the next iteration.
+
+    Args:
+        model (RandomForestRegressor | ExtraTreesRegressor): decision tree
+          ensemble model.
+        acq_func (Callable): acquisition function to maximise to find next
+          point.
+        n_dimensions (int): number of dimensions.
+        grd_res (int): grid resolution in each dimension.
+        bounds (list): list of minimum and maximum bounds for each dimension,
+          defaults to 0 and 1.
+        acq_kwargs: keyword arguments for acquisition function.
+
+    Returns:
+        point on grid to investigate next.
+    """
+    # Get grid points for search
+    meshgrid = construct_meshgrid(n_dimensions, grd_res, bounds)
+    ravel_meshgrid = [x.ravel() for x in meshgrid]
+    X_pred = np.column_stack(ravel_meshgrid)
+
+    y_mean, y_std = get_ensemble_stats(model, X_pred)
+
+    # Find range of longest dimension
+    max_range = 1
+    if bounds is not None:
+        max_range = 0
+        for b in bounds:
+            dim_range = b[1] - b[0]
+            if max_range < dim_range:
+                max_range = dim_range
+    limit = max_range / (grd_res - 1)
+
+    acq = acq_func(y_mean, y_std, **acq_kwargs)
+    mask = np.isclose(acq, acq.max(), rtol=1e-6, atol=1e-9)
+    x_candidates = X_pred[mask]
+    x_next = x_candidates.mean(axis=0)
+
+    while True:
+        meshgrid = construct_fine_meshgrid(x_next, grd_res, limit, bounds)
+        ravel_meshgrid = [x.ravel() for x in meshgrid]
+        X_pred = np.column_stack(ravel_meshgrid)
+
+        y_mean, y_std = get_ensemble_stats(model, X_pred)
+
+        acq = acq_func(y_mean, y_std, **acq_kwargs)
+        mask = np.isclose(acq, acq.max(), rtol=1e-6, atol=1e-9)
+        x_candidates = X_pred[mask]
+        x_next = x_candidates.mean(axis=0)
+
+        if limit < 1e-6:
+            return x_next
+
+        limit /= (grd_res - 1)
 
 
 def get_circumference_points(
@@ -207,3 +287,90 @@ def get_circumference_points(
         points.append((x0, x1))
 
     return points
+
+
+def find_next_point(
+    X: np.ndarray,
+    y: np.ndarray,
+    tree: DecisionTreeRegressor,
+    seed_input: str,
+    kernel_type: KernelType = KernelType.RBF,
+    initial_length_scale: float = 0.1,
+    length_scale_bounds: tuple[float, float] = (1e-2, 100),
+    nu: float = 1.5,
+    n_samples: int = 2000,
+    xi: float = 0.05,
+    temperature: float = 0.7,
+):
+    """Generate candidates in regions identified by a decision tree model and
+    identify the candidate points in each region that maximise the Expected
+    Improvement (EI) acquisition function. A global Gaussian Process regression
+    surrogate model provides the mean and standard deviation predictions for
+    each candidate.
+
+    Args:
+        X (np.ndarray): inputs to train Gaussian Process regression model.
+        y (np.ndarray): outputs to train Gaussian Process regression model.
+        tree (DecisionTreeRegressor): Decision Tree model.
+        seed_input (str): string used to generate seed.
+        kernel_type (KernelType): kernel for Gaussian Process surrogate model.
+        initial_length_scale (float): initial guess at length scale for all
+          dimensions.
+        length_scale_bounds (tuple): lower and upper bounds for length scale.
+        nu (float): smoothness parameter for Matern kernel.
+        n_samples (int): number of samples to generate across all regions.
+        xi (float): exploration parameter for EI acquisition function.
+        temperature (float): sharpness parameter for softmax distribution.
+          Lower values concentrate samples in more promising regions.
+
+    Returns:
+        lists of coordinates, values and region numbers for best candidate
+          points from each region, and output from acquisition function.
+    """
+    n_dimensions = X.shape[1]
+
+    # Fit Gaussian Process surrogate model
+    model = get_reg_model(
+        n_dimensions=n_dimensions,
+        seed_input=seed_input,
+        kernel_type=kernel_type,
+        initial_length_scale=initial_length_scale,
+        length_scale_bounds=length_scale_bounds,
+        nu=nu,
+    )
+    model.fit(X, y)
+
+    regions = get_regions(tree, n_dimensions)
+
+    # Generate candidates
+    X_candidates, X_regions = sample_regions(n_samples, regions, temperature)
+
+    y_mean, y_std = model.predict(X_candidates, return_std=True)
+    ei_acquisition = expect_improv(y_mean, y_std, y.max(), xi)
+
+    best_points = []
+    best_values = []
+    region_ids = []
+    for region in np.unique(X_regions):
+        mask = X_regions == region
+
+        region_acq = ei_acquisition[mask]
+        region_points = X_candidates[mask]
+
+        best_idx = np.argmax(region_acq)
+        best_points.append(region_points[best_idx])
+        best_values.append(region_acq[best_idx])
+        region_ids.append(region)
+
+    best_points = np.array(best_points)
+    best_values = np.array(best_values)
+    region_ids = np.array(region_ids)
+
+    sorted_idx = np.argsort(best_values)[::-1]
+
+    return (
+        best_points[sorted_idx],
+        best_values[sorted_idx],
+        region_ids[sorted_idx],
+        ei_acquisition,
+    )

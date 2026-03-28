@@ -50,7 +50,7 @@ def get_reg_model(
     seed_input: str,
     kernel_type: KernelType = KernelType.RBF,
     initial_length_scale: float = 0.1,
-    length_scale_bounds: tuple[float] = (1e-2, 100),
+    length_scale_bounds: tuple[float, float] = (1e-2, 100),
     nu: float = 1.5,
     **model_kwargs,
 ) -> GaussianProcessRegressor | None:
