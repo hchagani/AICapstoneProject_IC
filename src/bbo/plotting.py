@@ -150,7 +150,7 @@ def plot_2d_gp_surfaces(
 
     # Highlight regions if present
     if regions is not None:
-        for region in regions:
+        for i, region in enumerate(regions):
             x0_min, x1_min = region[0]
             x0_max, x1_max = region[1]
             width = x0_max - x0_min
@@ -162,8 +162,9 @@ def plot_2d_gp_surfaces(
                     height,
                     fill=False,
                     edgecolor="red",
-                    linestype="--",
-                    linewidth=2
+                    linestyle="--",
+                    linewidth=2,
+                    label='Region boundary' if i == 0 else None,
                 )
             )
 
@@ -215,6 +216,7 @@ def plot_2d_gp_acq_func_surface(
     x_samples: np.ndarray,
     y_samples: np.ndarray | None = None,
     x_next: np.ndarray | None = None,
+    regions: list[np.ndarray, np.ndarray, float] | None = None,
     figsize: tuple[int, int] = (8, 7),
     title: str = "Acquisition function output",
     ax: Axes = None,
@@ -226,7 +228,8 @@ def plot_2d_gp_acq_func_surface(
         Y_acq (np.ndarray): acquisition function output
         x_samples (np.ndarray): sample inputs.
         y_samples (np.ndarray): sample outputs.
-        x_next (np.ndarray): coordinates of proposed point.
+        x_next (np.ndarray): coordinates of proposed point(s).
+        regions (list): list of regions from decision tree.
         figsize (tuple): figure size.
         title (str): plot title.
         ax (Axes): axis object.
@@ -251,14 +254,38 @@ def plot_2d_gp_acq_func_surface(
         label="Samples",
     )
     fig.colorbar(plot, ax=ax, label="Acquisition function output")
+
+    # Highlight regions if present
+    if regions is not None:
+        for i, region in enumerate(regions):
+            x0_min, x1_min = region[0]
+            x0_max, x1_max = region[1]
+            width = x0_max - x0_min
+            height = x1_max - x1_min
+            ax.add_patch(
+                plt.Rectangle(
+                    (x0_min, x1_min),
+                    width,
+                    height,
+                    fill=False,
+                    edgecolor="red",
+                    linestyle="--",
+                    linewidth=2,
+                    label='Region boundary' if i == 0 else None,
+                )
+            )
+
+    # Plot proposed point or candidate points if supplied
     if x_next is not None:
+        x_next = np.atleast_2d(x_next)
+        label = "Next point" if x_next.shape[0] == 1 else "Candidate points"
         ax.scatter(
-            x_next[0],
-            x_next[1],
-            marker='X',
+            x_next[:, 0],
+            x_next[:, 1],
+            marker="X",
             s=60,
-            color='r',
-            label='Next point',
+            color="r",
+            label=label,
         )
     ax.legend()
     ax.set_xlabel("x0")

@@ -90,3 +90,41 @@ def expect_improv(
     z = improvement / std
 
     return improvement * norm.cdf(z) + std * norm.pdf(z)
+
+
+def get_acquisition_functions(y_max: float, k: float = 1.96, xi: float = 0.05):
+    """Get list of acquisition functions with exploration parameter arguments
+    if applicable. This is used in loops.
+
+    Args:
+        y_max (float): maximum output value.
+        k (float): exploration parameter for Upper Confidence Bound (UCB).
+        xi (float): exploration parameter for Expected Improvement (EI).
+
+    Returns:
+        list of acqusition functions ready to use in loops.
+    """
+    return [
+        {
+            "name": f"Upper Confidence Bound (k = {k})",
+            "acq_kwargs": {
+                "acq_func": ucb,
+                "k": k,
+            },
+        },
+        {
+            "name": "Probability of Improvement",
+            "acq_kwargs": {
+                "acq_func": prob_improv,
+                "y_max": y_max,
+            },
+        },
+        {
+            "name": f"Expected Improvement (xi = {xi})",
+            "acq_kwargs": {
+                "acq_func": expect_improv,
+                "xi": xi,
+                "y_max": y_max,
+            },
+        },
+    ]

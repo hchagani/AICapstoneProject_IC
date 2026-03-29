@@ -9,13 +9,8 @@ from sklearn.gaussian_process import (
     GaussianProcessRegressor,
 )
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor
 
-from bbo.acquisition import expect_improv
-from bbo.bayesian_optimisation import get_reg_model
-from bbo.decision_trees import get_ensemble_stats, get_regions
-from bbo.enums import KernelType
-from bbo.random import sample_regions
+from bbo.decision_trees import get_ensemble_stats
 
 
 def construct_meshgrid(
@@ -289,64 +284,31 @@ def get_circumference_points(
     return points
 
 
-def find_next_point(
-    X: np.ndarray,
-    y: np.ndarray,
-    tree: DecisionTreeRegressor,
-    seed_input: str,
-    kernel_type: KernelType = KernelType.RBF,
-    initial_length_scale: float = 0.1,
-    length_scale_bounds: tuple[float, float] = (1e-2, 100),
-    nu: float = 1.5,
-    n_samples: int = 2000,
-    xi: float = 0.05,
-    temperature: float = 0.7,
+def find_best_candidates(
+    gp_model: GaussianProcessRegressor,
+    X_candidates: np.ndarray,
+    X_regions: np.ndarray,
+    acq_func: Callable,
+    **acq_kwargs,
 ):
-    """Generate candidates in regions identified by a decision tree model and
-    identify the candidate points in each region that maximise the Expected
-    Improvement (EI) acquisition function. A global Gaussian Process regression
-    surrogate model provides the mean and standard deviation predictions for
-    each candidate.
+    """In each region, generate candidate points and find those that maximise
+    the acquisition function. A global Gaussian Process regression surrogate
+    model provides the mean and standard deviation predictions for each
+    candidate.
 
     Args:
-        X (np.ndarray): inputs to train Gaussian Process regression model.
-        y (np.ndarray): outputs to train Gaussian Process regression model.
-        tree (DecisionTreeRegressor): Decision Tree model.
-        seed_input (str): string used to generate seed.
-        kernel_type (KernelType): kernel for Gaussian Process surrogate model.
-        initial_length_scale (float): initial guess at length scale for all
-          dimensions.
-        length_scale_bounds (tuple): lower and upper bounds for length scale.
-        nu (float): smoothness parameter for Matern kernel.
-        n_samples (int): number of samples to generate across all regions.
-        xi (float): exploration parameter for EI acquisition function.
-        temperature (float): sharpness parameter for softmax distribution.
-          Lower values concentrate samples in more promising regions.
+        gp_model (GaussianProcessRegressor): Gaussian Process surrogate model.
+        X_candidates (np.ndarray): input coordinates for candidate points.
+        X_regions (np.ndarray): corresponding region of candidate points.
+        acq_func (Callable): acquisition function.
+        **acq_kwargs: keyword arguments for acquisition function.
 
     Returns:
         lists of coordinates, values and region numbers for best candidate
-          points from each region, and output from acquisition function.
+          points from each region.
     """
-    n_dimensions = X.shape[1]
-
-    # Fit Gaussian Process surrogate model
-    model = get_reg_model(
-        n_dimensions=n_dimensions,
-        seed_input=seed_input,
-        kernel_type=kernel_type,
-        initial_length_scale=initial_length_scale,
-        length_scale_bounds=length_scale_bounds,
-        nu=nu,
-    )
-    model.fit(X, y)
-
-    regions = get_regions(tree, n_dimensions)
-
-    # Generate candidates
-    X_candidates, X_regions = sample_regions(n_samples, regions, temperature)
-
-    y_mean, y_std = model.predict(X_candidates, return_std=True)
-    ei_acquisition = expect_improv(y_mean, y_std, y.max(), xi)
+    y_mean, y_std = gp_model.predict(X_candidates, return_std=True)
+    acq = acq_func(y_mean, y_std, **acq_kwargs)
 
     best_points = []
     best_values = []
@@ -354,7 +316,7 @@ def find_next_point(
     for region in np.unique(X_regions):
         mask = X_regions == region
 
-        region_acq = ei_acquisition[mask]
+        region_acq = acq[mask]
         region_points = X_candidates[mask]
 
         best_idx = np.argmax(region_acq)
@@ -372,5 +334,4 @@ def find_next_point(
         best_points[sorted_idx],
         best_values[sorted_idx],
         region_ids[sorted_idx],
-        ei_acquisition,
     )
