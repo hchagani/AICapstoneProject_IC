@@ -1,8 +1,20 @@
+from itertools import combinations
+
 from matplotlib.axes import Axes
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+PLOT_LAYOUTS_BY_DIMENSION = {
+    2: {"nrows": 1, "ncols": 1, "figsize": (8, 7)},
+    3: {"nrows": 1, "ncols": 3, "figsize": (15, 4)},
+    4: {"nrows": 2, "ncols": 3, "figsize": (15, 8)},
+    5: {"nrows": 5, "ncols": 2, "figsize": (10, 20)},
+    6: {"nrows": 5, "ncols": 3, "figsize": (15, 20)},
+    8: {"nrows": 7, "ncols": 4, "figsize": (15, 28)},
+}
 
 
 def plot_correlation_matrix(
@@ -349,6 +361,62 @@ def plot_2d_positive_negative(
     fig.tight_layout()
 
     return fig, ax
+
+
+def plot_2d_array(x_samples: np.ndarray, y_samples: np.ndarray | None = None):
+    """Plot array of 2d plots. Shape of array depends on number of input
+    features (dimensions).
+
+    Args:
+        x_samples (np.ndarray): sample inputs.
+        y_samples (np.ndarray): sample outputs.
+
+    Returns:
+        tuple of figure and array of axis objects.
+    """
+    n_dimensions = x_samples.shape[1]
+
+    fig, axs = plt.subplots(
+        **PLOT_LAYOUTS_BY_DIMENSION[n_dimensions],
+        constrained_layout=True,
+    )
+    axs = np.atleast_1d(axs).ravel()
+
+    scatter_color = "k"
+    norm = None
+    if y_samples is not None:
+        norm = mcolors.Normalize(vmin=y_samples.min(), vmax=y_samples.max())
+        scatter_color = y_samples
+
+    sc = None  # scatter mappable
+    for ax_idx, (i, j) in enumerate(combinations(range(n_dimensions), 2)):
+        sc = axs[ax_idx].scatter(
+            x_samples[:, i],
+            x_samples[:, j],
+            c=scatter_color,
+            norm=norm,
+            marker="o",
+            edgecolor="k",
+            s=60,
+            label="Samples",
+        )
+        axs[ax_idx].grid()
+        if ax_idx == 0:
+            axs[ax_idx].legend()
+        axs[ax_idx].set_xlabel(f"x{i}")
+        axs[ax_idx].set_ylabel(f"x{j}")
+        axs[ax_idx].set_xlim(0.0, 1.0)
+        axs[ax_idx].set_ylim(0.0, 1.0)
+
+    if y_samples is not None:
+        fig.colorbar(
+            sc,
+            ax=axs,
+            label="y",
+            aspect=PLOT_LAYOUTS_BY_DIMENSION[n_dimensions]["nrows"] * 20,
+        )
+
+    return fig, axs
 
 
 def plot_decision_tree(

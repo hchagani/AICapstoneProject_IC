@@ -335,3 +335,63 @@ def find_best_candidates(
         best_values[sorted_idx],
         region_ids[sorted_idx],
     )
+
+
+def suggest_local_candidates(
+    x_samples: np.ndarray,
+    y_samples: np.ndarray,
+    model: GaussianProcessRegressor,
+    acq_func: Callable,
+    fraction: float = 0.0,
+    **acq_kwargs,
+):
+    """Suggest new candidate points to query around potential maxima.
+
+    Args:
+        x_samples (np.ndarray): input values for samples.
+        y_samples (np.ndarray): output values for samples.
+        model (GaussianProcessRegressor): fitted Gaussian Process surrogate
+          model.
+        acq_func (Callable): acquisition function.
+        fraction (float): fraction of high output points to explore. Selects
+          highest output point only if set to 0.
+        **acq_kwargs: keyword arguments for acquisition function.
+
+    Returns:
+        list of candidate points sorted by acquisition function score for each
+          high output point selected.
+    """
+    n_samples, n_dimensions = x_samples.shape
+
+    # Select indices for high output points and sort in descending order
+    k = max(1, int(np.ceil(fraction * n_samples)))
+    top_idx = np.argpartition(y_samples, -k)[-k:]
+    top_idx = top_idx[np.argsort(y_samples[top_idx])[::-1]]
+
+    # Use kernel length scales to calculate offsets of candidates from high
+    # output points
+    length_scales = model.kernel_.length_scale
+    boundaries = [
+        (max(-0.05, -0.5 * ls), min(0.05, 0.5 * ls)) for ls in length_scales
+    ]
+    offsets = np.array(
+        construct_meshgrid(n_dimensions, grd_res=2, bounds=boundaries)
+    ).T.reshape(-1, n_dimensions)
+
+    # Generate candidates around each point
+    max_y = y_samples.max()
+    results = []
+    for idx in top_idx:
+        current_point = x_samples[idx]
+        candidates = np.clip(current_point + offsets, 0.0, 1.0)
+        mean, std = model.predict(candidates, return_std=True)
+        acq = acq_func(mean, std, **acq_kwargs)
+
+        # Sort candidates by acquisition function output
+        sorted_idx = np.argsort(acq)[::-1]
+        candidates_sorted = candidates[sorted_idx]
+        acq_sorted = acq[sorted_idx]
+
+        results.append((current_point, candidates_sorted, acq_sorted))
+
+    return results
