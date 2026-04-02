@@ -7,6 +7,8 @@ import numpy as np
 import seaborn as sns
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 
+from bbo.neural_networks import Net, ensemble_predict
+
 PLOT_LAYOUTS_BY_DIMENSION = {
     2: {"nrows": 1, "ncols": 1, "figsize": (8, 7)},
     3: {"nrows": 1, "ncols": 3, "figsize": (15, 4)},
@@ -231,7 +233,7 @@ def plot_2d_gp_acq_func_surface(
     regions: list[np.ndarray, np.ndarray, float] | None = None,
     figsize: tuple[int, int] = (8, 7),
     title: str = "Acquisition function output",
-    ax: Axes = None,
+    ax: Axes | None = None,
 ) -> tuple:
     """Plot acquisition function output with sample points.
 
@@ -445,6 +447,86 @@ def plot_decision_tree(
         impurity=True,
         ax=ax,
     )
+
+    fig.tight_layout()
+
+    return fig, ax
+
+
+def plot_loss_function_decay_curves(
+    train_losses: np.ndarray,
+    val_losses: np.ndarray,
+    title: str,
+    ax: Axes | None = None,
+    figsize: tuple[int, int] = (8, 7),
+):
+    """Plot loss function decay curves for training and validation data sets.
+
+    Args:
+        train_losses (np.ndarray): output of loss function on training set in
+          each epoch.
+        val_losses (np.ndarray): output of loss function on validation set in
+          each epoch.
+        title (str): plot title.
+        ax (Axes): axis object.
+        figsize (tuple): figure size.
+
+    Returns:
+        tuple of figure and axis objects.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+    else:
+        fig = ax.figure
+
+    ax.plot(np.sqrt(train_losses), c='k', label="Training loss")
+    ax.plot(np.sqrt(val_losses), c='b', label="Validation loss")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Root Mean Square Error (RMSE) loss")
+    ax.set_title(title)
+    ax.grid()
+    ax.legend()
+
+    return fig, ax
+
+
+def plot_nn_predictions(
+    x_samples: np.ndarray,
+    y_samples: np.ndarray,
+    models: list[Net],
+    title: str,
+    figsize: tuple[int, int] = (12, 6),
+):
+    """Get means and standard deviations of predicted outputs for each sample
+    from ensemble of neural network models. Plot the mean with standard error
+    for each sample and compare with true value.
+
+    Args:
+        x_samples (np.ndarray): sample inputs.
+        y_samples (np.ndarray): sample outputs.
+        models (list[Net]): list of trained neural network models.
+        figsize (tuple): figure size.
+
+    Returns:
+        tuple of figure and axis objects.
+    """
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+    mean, std = ensemble_predict(models, x_samples)
+    errors = std / np.sqrt(len(models))
+
+    x_axis = range(len(y_samples))
+    ax.errorbar(
+        x_axis, mean, yerr=errors, fmt="x", label="Predictions"
+    )
+
+    ax.scatter(x_axis, y_samples, c='r', label="True values")
+
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Output")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid()
 
     fig.tight_layout()
 

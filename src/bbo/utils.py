@@ -99,6 +99,31 @@ def get_farthest_point(
     return x_next
 
 
+def largest_gap_midpoints(x: np.ndarray):
+    """Find largest empty space in each dimension and midpoints of these spaces
+    as coordinates of a proposed point to investigate.
+
+    Args:
+        x (np.ndarray): input data.
+
+    Returns:
+        coordinates of proposed point to investigate.
+    """
+    n_dimensions = x.shape[1]
+
+    x_coordinates = []
+    for dim in range(n_dimensions):
+        # Stay away from corners too
+        x_ = np.hstack([x[:, dim], np.array([0, 1])])
+        x_sorted = np.sort(x_)
+        diff = np.diff(x_sorted)
+        largest_gap_idx = np.argmax(diff)
+        x_dim = (x_sorted[largest_gap_idx] + x_sorted[largest_gap_idx + 1]) / 2
+        x_coordinates.append(x_dim)
+
+    return np.array(x_coordinates)
+
+
 def grid_search(
     model: GaussianProcessRegressor,
     acq_func: Callable,

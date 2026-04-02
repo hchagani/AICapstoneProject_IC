@@ -110,3 +110,35 @@ def kfoldcv(
         }
 
     return stats
+
+
+def get_hessian_matrix_and_gradient_vector(model: Pipeline, n_dimensions: int):
+    """Get Hessian matrix and gradient vector from quadratic linear regression
+    model.
+
+    Args:
+        model (Pipeline): fitted pipeline with two steps:
+          1. PolynomialFeatures with degree 2.
+          2. LinearRegression, which is assumed to be fitted and contains the
+            coefficients of the quadratic function. This step should be named
+            'lr'.
+        n_dimensions (int): number of dimensions (i.e. input features).
+
+    Returns:
+        Hessian matrix and gradient vector.
+    """
+    coef = model.named_steps["lr"].coef_
+    g = coef[:n_dimensions]  # gradient vector
+    quad = coef[n_dimensions:]
+    H = np.zeros((n_dimensions, n_dimensions))
+
+    # Map quadratic terms to Hessian
+    idx = 0
+    for i in range(n_dimensions):
+        H[i, i] = 2 * quad[idx]
+        idx += 1
+        for j in range(i + 1, n_dimensions):
+            H[i, j] = H[j, i] = quad[idx]  # commute
+            idx += 1
+
+    return H, g
