@@ -49,14 +49,14 @@ The input features are the axes of an area with contamination sources. The outpu
 Initial observations of the data indicate there are negative values, which make little physical sense and therefore may be noise. The positive values are rather flat, and there does not appear to be a clear peak.
 
 #### Strategy
-1. Initial Exploration (Weeks 1-3):
+1. Initial exploration (Weeks 1-3):
    - Sampled points far away from existing observations and boundaries.
    - No clear structure emerged.
 1. Initial Bayesian Optimisation (Weeks 4-6):
    - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
-   - Used an Upper Confidence Bound (UCB) acquisition function to balance exploration with exploitation. These tended to suggest boundary points as these areas were where the global GP models were least certain.
-   - Attempts at linear regression with Leave One Out Cross Validation were not fruitful.
-1. Combination of Classification & Regression GP Surrogate Models (Weeks 7-14):
+   - Used an Upper Confidence Bound (UCB) acquisition function to balance exploration with exploitation. This tended to suggest boundary points as these areas were where the global GP models were least certain.
+   - Attempts at linear regression with leave one out and 5-fold cross validation were not fruitful.
+1. Combination of classification & regression GP surrogate models (Weeks 7-14):
    - Introduced two GP models:
      1. Classificaton GP to predict probability of positive output.
      1. Regression GP trained on logarithmic values of positive outputs to predict magnitude of output.
@@ -64,3 +64,23 @@ Initial observations of the data indicate there are negative values, which make 
    - Generated equidistant candidate points along the circumference of a circle around the best observed point, with radius equal to the midpoint between this point and its nearest neighbour with negative output. This allowed for exploitation in promising regions.
    - Successfully identified a point with an output several orders of magnitude higher than the best point in the initial data set.
    - The landscape appears jagged with many local maxima. Identified at least 2 promising regions for further queries.
+
+### Function 2
+The input features are two machine learning model parameters. The output is the log-likelihood score.
+
+Initial observations of the data suggest that there are two promising regions along the 0.6 < `x0` < 0.8 band.
+
+#### Strategy
+1. Initial exploration & Bayesian Optimisation (Weeks 1-6):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
+   - Used Upper Confidence Bound (UCB) function to balance exploration with exploitation. Occasionally this tended to suggest points close to the boundary, although some promising points in more central regions were identified.
+   - The underlying function appears to be less sensitive to changes in `x1`, and the two promising regions identified in the initial data set merge into a promising band between 0.6 <`x0` < 0.8.
+   - Projecting points onto the `x0` axis, and submitting queries in this promising band reveal a complicated landscape that may consist of many sharp peaks.
+   - Attempts at linear regression with leave one out and 5-fold cross validation wer not fruitful.
+1. Region-based analysis with decision trees and GP surrogate models (Weeks 7-14):
+   - Introduced decision tree models to partition domain into regions based on observed output values.
+   - Generated candidate points in each region. More candidates were generated in regions with a higher mean output using softmax weighting.
+   - Global GP surrogate model and Expected Improvement (EI) acquisition function were used to assess and select candidate points to query.
+   - The landscape appears complex in region 0.6 < `x0` < 0.8 with the potential presence of many local maxima.
+   - A promising region in the band where `x0` is approximately 0.9 has not been explored.
+   - Random forests and extra trees ensembles were investigated as surrogate model replacements for the GP. However, they were found to be biased towards high density areas and therefore may miss promising unexplored regions that were picked up by the GP.
