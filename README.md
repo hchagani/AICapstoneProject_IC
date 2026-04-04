@@ -46,8 +46,21 @@ As there are 8 different functions that are independent from each other, it woul
 ### Function 1
 The input features are the axes of an area with contamination sources. The output is the strength of contamination (e.g. radiation) at the coordinates.
 
-Initial observations of the data indicate there are negative values, which make little physical sense and therefore may be noise. The positive values are rather flat, and there does not appear to be a clear peak. Therefore, it was decided to focus on exploration over exploitation over the first 3 weeks, querying coordinates farthest away from any known points or corners.
+Initial observations of the data indicate there are negative values, which make little physical sense and therefore may be noise. The positive values are rather flat, and there does not appear to be a clear peak.
 
-No clear patterns emerged from this initial phase. Attempts to fit linear regression models with linear and quadratic functions was attempted during week 4. As there are few data points, k-fold cross-validation was performed with a validation set of size 1. The results were not promising. Therefore, Bayesian Optimisation was implemented in week 4, using a Gaussian Process surrogate model with a Radial Basis Function kernel. An Upper Confidence Bound acquisition function with an exploration parameter of 1.96 was used to select the next point to query.
-
-it may be worth revisiting the linear regression model in the future. Additionally, using a Support Vector Machine model to identify promising regions may yield dividends. For the time being, an exploration strategy seems to be better.
+#### Strategy
+1. Initial Exploration (Weeks 1-3):
+   - Sampled points far away from existing observations and boundaries.
+   - No clear structure emerged.
+1. Initial Bayesian Optimisation (Weeks 4-6):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
+   - Used an Upper Confidence Bound (UCB) acquisition function to balance exploration with exploitation. These tended to suggest boundary points as these areas were where the global GP models were least certain.
+   - Attempts at linear regression with Leave One Out Cross Validation were not fruitful.
+1. Combination of Classification & Regression GP Surrogate Models (Weeks 7-14):
+   - Introduced two GP models:
+     1. Classificaton GP to predict probability of positive output.
+     1. Regression GP trained on logarithmic values of positive outputs to predict magnitude of output.
+   - Acquisition function was product of probability from classification GP and either UCB or Probability of Improvement (PI) acquisition functions from regression GP.
+   - Generated equidistant candidate points along the circumference of a circle around the best observed point, with radius equal to the midpoint between this point and its nearest neighbour with negative output. This allowed for exploitation in promising regions.
+   - Successfully identified a point with an output several orders of magnitude higher than the best point in the initial data set.
+   - The landscape appears jagged with many local maxima. Identified at least 2 promising regions for further queries.
