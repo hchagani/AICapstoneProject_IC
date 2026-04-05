@@ -56,7 +56,7 @@ Initial observations of the data indicate there are negative values, which make 
    - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
    - Used an Upper Confidence Bound (UCB) acquisition function to balance exploration with exploitation. This tended to suggest boundary points as these areas were where the global GP models were least certain.
    - Attempts at linear regression with leave one out and 5-fold cross validation were not fruitful.
-1. Combination of classification & regression GP surrogate models (Weeks 7-14):
+1. Combination of classification & regression GP surrogate models (Weeks 7-13):
    - Introduced two GP models:
      1. Classificaton GP to predict probability of positive output.
      1. Regression GP trained on logarithmic values of positive outputs to predict magnitude of output.
@@ -77,10 +77,38 @@ Initial observations of the data suggest that there are two promising regions al
    - The underlying function appears to be less sensitive to changes in `x1`, and the two promising regions identified in the initial data set merge into a promising band between 0.6 <`x0` < 0.8.
    - Projecting points onto the `x0` axis, and submitting queries in this promising band reveal a complicated landscape that may consist of many sharp peaks.
    - Attempts at linear regression with leave one out and 5-fold cross validation wer not fruitful.
-1. Region-based analysis with decision trees and GP surrogate models (Weeks 7-14):
+1. Region-based analysis with decision trees and GP surrogate models (Weeks 7-13):
    - Introduced decision tree models to partition domain into regions based on observed output values.
    - Generated candidate points in each region. More candidates were generated in regions with a higher mean output using softmax weighting.
    - Global GP surrogate model and Expected Improvement (EI) acquisition function were used to assess and select candidate points to query.
    - The landscape appears complex in region 0.6 < `x0` < 0.8 with the potential presence of many local maxima.
    - A promising region in the band where `x0` is approximately 0.9 has not been explored.
    - Random forests and extra trees ensembles were investigated as surrogate model replacements for the GP. However, they were found to be biased towards high density areas and therefore may miss promising unexplored regions that were picked up by the GP.
+
+### Function 4
+The input features are four machine learning model hyperparameters. The machine learning model approximates the optimal placing of products across warehouses for a business with high online sales. The output is the difference from the expensive baseline.
+
+All initial data points have a negative output, implying that none of them perform better than the expensive baseline. There is one point that performs signficantly better than the others, around which there may be a promising region to explore.
+
+#### Strategy
+1. Initial exploration (Weeks 1-3):
+   - Sampled points from midpoints of largest empty spaces in each dimension, assuming that independence between features.
+   - No other promising regions identified.
+1. Quadratic linear regression (Weeks 4, 6-7 & 13):
+   - Introduced global linear regression models to explain observed data.
+   - Quadratic linear regression model provided good fit to data, verified through leave one out and 10-fold cross validation.
+   - Querying the peaks of fitted global quadratic linear model consistently led to higher outputs. The final query led to the only point found with a positive output (i.e. it beat the expensive baseline).
+   - Eigenvalues from the Hessian matrix showed that the model's peak was fairly round with relatively large curvature. The matrix also showed a relatively low amount of interaction between features.
+   - Investigating points along the flattest direction of the model's peak indicated it was likely steep and well-centred.
+1. Bayesian Optimisation (Weeks 5 & 8):
+   - Adopted global Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
+   - Upper Confidence Bound (UCB) acqusition function were used to assess and select candidate points to query to balance exploration with exploitation.
+   - Iterative grid search performed to improve resolution.
+   - No other promising regions identified.
+1. Neural network models and ensembles (Weeks 9-12):
+   - A variety of neural network layouts and acquisition functions assessed by comparing training and validation loss function outputs with epoch number. Root Mean Square Error (RMSE) was the chosen loss function metric.
+   - After selecting a layout, the ensemble of neural network models was trained on all the data.
+   - Generated candidate points according to Latin Hypercube algorithm to provide better coverage of domain with fewer samples.
+   - Results from ensemble used to select candidate point for a query. Subsequent queries used the results from the best model in an ensemble.
+   - Generalisation was found to be poor as the data set was too small for neural networks and the predicted outputs were unreliable.
+   - No other promising regions identified.
