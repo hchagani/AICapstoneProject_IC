@@ -58,10 +58,13 @@ def construct_fine_meshgrid(
     axis_arrays = [
         np.linspace(x_dim - 0.5 * limit, x_dim + 0.5 * limit, grd_res) for x_dim in x
     ]
-    if bounds is not None:  # constrain to bounds
-        axis_arrays = [
-            np.clip(arr, b[0], b[1]) for arr, b in zip(axis_arrays, bounds)
-        ]
+
+    if bounds is None:  # ensure grid does not extend past domain
+        bounds = [(0.0, 1.0) for _ in x]
+
+    axis_arrays = [
+        np.clip(arr, b[0], b[1]) for arr, b in zip(axis_arrays, bounds)
+    ]  # constrain to bounds
 
     return axis_arrays
 
