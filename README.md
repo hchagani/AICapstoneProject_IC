@@ -85,6 +85,22 @@ Initial observations of the data suggest that there are two promising regions al
    - A promising region in the band where `x0` is approximately 0.9 has not been explored.
    - Random forests and extra trees ensembles were investigated as surrogate model replacements for the GP. However, they were found to be biased towards high density areas and therefore may miss promising unexplored regions that were picked up by the GP.
 
+### Function 3
+The input features are three compounds in a drug discovery project. The output is the severity of the side effects from different combinations of these compounds.
+
+The outputs have been inverted so they are all negative. Therefore, a higher number corresponds to smaller side effects. Of the intial data points, two high value ones lie near each other indicating the presence of a promising region to explore.
+
+#### Stategy
+1. Initial exploration & Bayesian Optimisation (Weeks 1-6):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernel.
+   - Used Upper Confidence Bound (UCB) function to balance exploration with exploitation. This either tended to suggest new regions to explore when model uncertainty was high or points in promising areas to exploit.
+   - Identified two promising regions.
+1. Exploitation with the Probability of Improvement (PI) acquisition function (Weeks 7-13):
+   - Continued with GP surrogate models with RBF kernel.
+   - Used PI acquisition function, adopting a strategy of exploitation in promsing regions.
+   - Constructed small grids around points with the highest output and assessed PI scores to determine next query. The grids had no more than two values in any dimension, and represented discretised small perturbations from the observed data points. The bounds for the grid are equal to half the GP's length scales in each dimension, with an upper bound of 0.05.
+   - Identified an additional promising region, which was exploited. A local maximum was found here.
+
 ### Function 4
 The input features are four machine learning model hyperparameters. The machine learning model approximates the optimal placing of products across warehouses for a business with high online sales. The output is the difference from the expensive baseline.
 
