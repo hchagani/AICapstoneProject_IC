@@ -5,6 +5,8 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from sklearn.base import ClassifierMixin
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 
 from bbo.neural_networks import Net, ensemble_predict
@@ -526,6 +528,57 @@ def plot_nn_predictions(
     ax.set_ylabel("Output")
     ax.set_title(title)
     ax.legend()
+    ax.grid()
+
+    fig.tight_layout()
+
+    return fig, ax
+
+
+def plot_confusion_matrix(
+    X: np.ndarray, clf: ClassifierMixin, X_class: np.ndarray, labels: list[str]
+) -> ConfusionMatrixDisplay:
+    """Plot confusion matrix.
+
+    Args:
+        X (np.ndarray): input data.
+        clf (ClassifierMixin): classification model.
+        X_class (np.ndarray): classified input data.
+        labels (list[str]): classification labels for input data.
+
+    Returns:
+        confusion matrix plot.
+    """
+    cm = confusion_matrix(X_class, clf.predict(X))
+    cmd = ConfusionMatrixDisplay(cm, display_labels=labels)
+
+    return cmd
+
+
+def plot_nearest_neighbour_distance(
+    distances: np.array,
+    k: int,
+    figsize: tuple[int, int] = (12, 6)
+):
+    """Plot distance to kth nearest neighbour.
+
+    Args:
+        distances (np.ndarray): distances of points to kth nearest neighbour.
+        k (int): index of nearest neighbour.
+        figsize (tuple): figure size.
+
+    Returns:
+        tuple of figure and axis objects.
+    """
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+    # Sort by distance to kth nearest neighbour
+    k_distances = np.sort(distances)
+
+    ax.plot(k_distances)
+    ax.set_ylabel(f"{k}-NN distance")
+    ax.set_xlabel("Points sorted")
+    ax.set_title(f"Distances to {k}th Nearest Neighbour")
     ax.grid()
 
     fig.tight_layout()

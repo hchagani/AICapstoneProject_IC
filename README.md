@@ -90,7 +90,7 @@ The input features are three compounds in a drug discovery project. The output i
 
 The outputs have been inverted so they are all negative. Therefore, a higher number corresponds to smaller side effects. Of the intial data points, two high value ones lie near each other indicating the presence of a promising region to explore.
 
-#### Stategy
+#### Strategy
 1. Initial exploration & Bayesian Optimisation (Weeks 1-6):
    - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernel.
    - Used Upper Confidence Bound (UCB) function to balance exploration with exploitation. This either tended to suggest new regions to explore when model uncertainty was high or points in promising areas to exploit.
@@ -128,3 +128,10 @@ All initial data points have a negative output, implying that none of them perfo
    - Results from ensemble used to select candidate point for a query. Subsequent queries used the results from the best model in an ensemble.
    - Generalisation was found to be poor as the data set was too small for neural networks and the predicted outputs were unreliable.
    - No other promising regions identified.
+
+### Function 5
+The input features are four chemical inputs. The output is the yield of a chemical process in a factory.
+
+There is one point with an output that is significantly higher than its surroundings. Based on domain knowledge of the process, one global maximum is expected. Therefore, a policy of exploitation in the region around this point was followed.
+
+### Strategy

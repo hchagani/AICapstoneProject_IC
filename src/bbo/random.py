@@ -87,3 +87,29 @@ def sample_regions(
             region_ids.extend([i] * n)
 
     return np.vstack(samples), np.array(region_ids)
+
+
+def get_candidates_uniform(
+    n_trials: int,
+    n_random: int,
+    n_dimensions: int,
+    seed_input: str,
+    bounds: tuple[float, float] = (0.0, 1.0)
+):
+    """Generate candidate points uniformly across all dimensions.
+
+    n_trials (int): number of iterations.
+    n_random (int): number of candidate points to generate per iteration.
+    n_dimensions (int): number of dimensions.
+    seed_input (str): string used to generate seed.
+    bounds (tuple): dimensional range within which to generate candidates.
+    """
+    # Set random seed for generator
+    rng = np.random.default_rng(seed=create_rng_seed(seed_input))
+
+    for _ in range(n_trials):
+        X_rand = rng.uniform(
+            bounds[0], bounds[1], size=(n_random, n_dimensions)
+        )
+
+        yield X_rand
