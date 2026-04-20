@@ -76,7 +76,7 @@ Initial observations of the data suggest that there are two promising regions al
    - Used Upper Confidence Bound (UCB) function to balance exploration with exploitation. Occasionally this tended to suggest points close to the boundary, although some promising points in more central regions were identified.
    - The underlying function appears to be less sensitive to changes in `x1`, and the two promising regions identified in the initial data set merge into a promising band between 0.6 <`x0` < 0.8.
    - Projecting points onto the `x0` axis, and submitting queries in this promising band reveal a complicated landscape that may consist of many sharp peaks.
-   - Attempts at linear regression with leave one out and 5-fold cross validation wer not fruitful.
+   - Attempts at linear regression with leave one out and 5-fold cross validation were not fruitful.
 1. Region-based analysis with decision trees and GP surrogate models (Weeks 7-13):
    - Introduced decision tree models to partition domain into regions based on observed output values.
    - Generated candidate points in each region. More candidates were generated in regions with a higher mean output using softmax weighting.
@@ -110,7 +110,7 @@ All initial data points have a negative output, implying that none of them perfo
 1. Initial exploration (Weeks 1-3):
    - Sampled points from midpoints of largest empty spaces in each dimension, assuming that independence between features.
    - No other promising regions identified.
-1. Quadratic linear regression (Weeks 4, 6-7 & 13):
+1. Quadratic linear regression (Weeks 4, 6, 7 & 13):
    - Introduced global linear regression models to explain observed data.
    - Quadratic linear regression model provided good fit to data, verified through leave one out and 10-fold cross validation.
    - Querying the peaks of fitted global quadratic linear model consistently led to higher outputs. The final query led to the only point found with a positive output (i.e. it beat the expensive baseline).
@@ -119,7 +119,7 @@ All initial data points have a negative output, implying that none of them perfo
 1. Bayesian Optimisation (Weeks 5 & 8):
    - Adopted global Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
    - Upper Confidence Bound (UCB) acqusition function were used to assess and select candidate points to query to balance exploration with exploitation.
-   - Iterative grid search performed to improve resolution.
+   - Recursive grid search performed to improve resolution.
    - No other promising regions identified.
 1. Neural network models and ensembles (Weeks 9-12):
    - A variety of neural network layouts and acquisition functions assessed by comparing training and validation loss function outputs with epoch number. Root Mean Square Error (RMSE) was the chosen loss function metric.
@@ -135,3 +135,24 @@ The input features are four chemical inputs. The output is the yield of a chemic
 There is one point with an output that is significantly higher than its surroundings. Based on domain knowledge of the process, one global maximum is expected. Therefore, a policy of exploitation in the region around this point was followed.
 
 ### Strategy
+1. Initial exploitation & Bayesian Optimisation (Weeks 1-4):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernel.
+   - Used Probability of Improvement (PI) function to exploit region around best observed data point.
+   - Outputs increased with successive queries. A promising region was identified as having `x2` and `x3` values that lie close to their upper boundaries.
+1. Support Vector Machine (SVM) guided boundary probing (Week 5):
+   - Use SVM classification model to identify boundary as mean output.
+   - The model separated high and low data points with 100% accuracy.
+   - Moved along gradient of decision function in `x2` and `x3` direction to find output had increased from that of the most influential support vector. This confirmed the presence of a promising region at high `x2` and `x3` values.
+1. Combination of GP surrogate with k-nearest neighbours models (Week 6):
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and Upper Confidence Bound (UCB) acquisition function. The UCB acquisition function had an additional term to penalise points that lie close to current best observed point to encourage exploration.
+   - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Based Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
+   - One of the positional medians from each cluster was chosen as the next point to query.
+   - Length scales from the GP models suggested that the output was less sensitive to changes in `x0` and `x1`.
+   - Output was low due to high GP uncertainty in unexplored regions. Given that a promising region had been identified, a single peak was expected and the relatively small number of remaining queries, this policy of exploration was discontinued.
+1. Exploitation with Random Forests (RF) ensemble models (Weeks 7-13):
+   - RF and extra trees ensembles were investigated as surrogate model replacements for the GP.
+   - RF ensemble models and a combination of Upper Confidence Bound (UCB), Probability of Improvement (PI) and Expected Improvement (EI) acquiisition functions were used a=to assess and select candidate points to query.
+   - Means and standard deviations were calculated from the trees that comprised the RF ensemble models.
+   - Used hierarchical agglomerative clustering algorithm with distance threshold of $\frac{1}{3}$ to identify clusters. Recursive grid search performed for each cluster to improve resolution.
+   - Found best observed point and consistently high outputs at combined high `x2` and `x3` values, in line with conclusions from GP. In this region, the output appears to be insensitive to changes in `x0` and `x1`.
+   - Potential second region identified at high `x2` and low `x3` values, which was not investigated further because of limited query budget.
