@@ -5,7 +5,7 @@ The Black Box Optimisation (BBO) capstone project consists of 8 optimisation pro
 
 This project exhibits problem-solving skills, the ability to work with limited data and within constraints, the extraction of information from data and the flexibility of changing approach in light of new evidence, and documentation and communication skills.
 
-Further details can be found in the [datasheet]{./datasheet.md} and [model card]{./model_card.md}.
+Further details can be found in the [datasheet](./datasheet.md) and [model card](./model_card.md).
 
 ## Setup instructions
 From the command line:

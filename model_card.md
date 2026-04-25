@@ -6,13 +6,13 @@ This model card contains information on the machine learning models used for the
 
 The __OctoBBO__ approach derives its name from the search for the global maxima of 8 (_octo_) functions that are hidden behind Black Box Optimisation (_BBO_) problems. As a unified approach is not employed and each function is treated as a separate problem, and the word "function" is derived from Latin, the octo- (eight in Latin) prefix is applied.
 
-Rather than presenting a single model, a range of strategies is documented in the [notebooks]{./notebooks/} within this repository. These strategies involve the reassessment of employed models and the implementation of new models as more data is revealed. Functions are evaluateed by submitting queries consisting of input values, which are derived using the strategies documented in this repository. The evolution of the strategy for each function on a weekly basis is presented here.
+Rather than presenting a single model, a range of strategies is documented in the [notebooks](./notebooks/) within this repository. These strategies involve the reassessment of employed models and the implementation of new models as more data is revealed. Functions are evaluateed by submitting queries consisting of input values, which are derived using the strategies documented in this repository. The evolution of the strategy for each function on a weekly basis is presented here.
 
 Each week corresponds to an update in version number as strategies change. The final version number is 14, derived from 13 weekly analyses and one analysis of the final result.
 
 ## Intended Use
 
-The model is primarily presented as part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence]{https://execed-online.imperial.ac.uk/professional-certificate-ml-ai}. Additionally, the model can be used for educational purposes as an illustration of how to maximise functions hidden behind a black box with few evaluations. Therefore, it is presented as an evolution of strategies over time rather than simply the final result.
+The model is primarily presented as part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). Additionally, the model can be used for educational purposes as an illustration of how to maximise functions hidden behind a black box with few evaluations. Therefore, it is presented as an evolution of strategies over time rather than simply the final result.
 
 The strategies presented here cannot be applied directly to maximise other BBO problems. These strategies are presented to invoke ideas and suggest avenues to pursue when presented with other BBO challenges.
 
@@ -20,7 +20,7 @@ The strategies presented here cannot be applied directly to maximise other BBO p
 
 A variety of strategies were implemented and no uniform model was used across all functions. The strategies employed for each function evolved in response to the outputs as queries were processed. These outputs dictated the direction of the subsequent analyses.
 
-A high-level summary is presented here. Further details can be found in the individual [notebooks]{./notebooks/}.
+A high-level summary is presented here. Further details can be found in the individual [notebooks](./notebooks/).
 
 With the exception of functions 5 & 6, which were deemed to have clear regions that could immediately be exploited, an initial phase of exploration was conducted. Typically, the initial 3-6 queries were dedicated to this phase, which either employed Bayesian Optimisation using a Gaussian Process surrogate model or a spatial sampling method. Once a promising region was identified, the strategy evolved into one of exploitation, which typically lasted until the final submission. This latter phase included applying a range of different machine learning models to the data in an attempt to find one that best described the most promising region.
 
@@ -28,7 +28,7 @@ An exception to this was function 4, where the exploitation phase was followed b
 
 In the cases of functions 5 & 6, the process was reversed. The initial exploitation phase employed Bayesian Optimisation with a Gaussian Process surrogate model and Probability of Improvement (PI) acquisition function. Once it was deemed that a point of diminishing returns had been reached, a policy of exploration was adopted. In the case of function 5, this was short-lived with a return to exploitation a couple of weeks later. For function 6, the exploratory phase lasted until the final three weeks, which saw a return to exploitation.
 
-The table below summarises the methods employed for each submission to determine the next point to submit as a query. Further details can be found in the [individual function notebooks]{./notebooks/}:
+The table below summarises the methods employed for each submission to determine the next point to submit as a query. Further details can be found in the [individual function notebooks](./notebooks/):
 
 | Function | Exploration Techniques | Exploitation Techniques |
 | :-: | --- | --- |
@@ -87,6 +87,6 @@ By definition, $I = 0$ if there has been no improvement.
 
 ## Ethical Considerations
 
-The [data set]{./data/} used in this strategy, the [notebooks]{./notebooks/} containing details of the rationale and models employed in this strategy, and the [source code]{./src/bbo} are available in this repository. This allows for full transparency of the analysis and for it to be reproduced in part or in full. Errors made in the original analysis have been identified.
+The [data set](./data/) used in this strategy, the [notebooks](./notebooks/) containing details of the rationale and models employed in this strategy, and the [source code](./src/bbo/) are available in this repository. This allows for full transparency of the analysis and for it to be reproduced in part or in full. Errors made in the original analysis have been identified.
 
-The strategy, as detailed here, is intended for educational purposes, and to invoke ideas and suggest avenues to pursue for other BBO challenges. Should the same functions be used in a future Capstone project for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence]{https://execed-online.imperial.ac.uk/professional-certificate-ml-ai}, the information in this repository can be used by students to gain additional information extra to the initial data set, and therefore is potentially an unfair advantage. While the stated aim of this project is to find the global maximum for each function, the secondary goal is to gain practical experience using a wide variety of machine learning models. The data set is available for all to use removing any unfair advantages and it is hoped that the notebooks will encourage experimentation with other models.
+The strategy, as detailed here, is intended for educational purposes, and to invoke ideas and suggest avenues to pursue for other BBO challenges. Should the same functions be used in a future Capstone project for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai), the information in this repository can be used by students to gain additional information extra to the initial data set, and therefore is potentially an unfair advantage. While the stated aim of this project is to find the global maximum for each function, the secondary goal is to gain practical experience using a wide variety of machine learning models. The data set is available for all to use removing any unfair advantages and it is hoped that the notebooks will encourage experimentation with other models.

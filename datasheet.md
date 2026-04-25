@@ -4,7 +4,7 @@ This datasheet contains information on the data set used for the Black Box Optim
 
 ## Motivation
 
-The data set was created for a BBO challenge that forms part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence]{https://execed-online.imperial.ac.uk/professional-certificate-ml-ai}. The data set consists of 8 optimisation problems where the underlying functions are unknown. The functions mimic real world problems. The goal is to find the global maxima through limited evaluation of each function.
+The data set was created for a BBO challenge that forms part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). The data set consists of 8 optimisation problems where the underlying functions are unknown. The functions mimic real world problems. The goal is to find the global maxima through limited evaluation of each function.
 
 Each function consists of two to 8 features, termed inputs. Functions are evaluated by submitting queries consisting of input values. A total of 13 queries, one for each week of the project, can be submitted for each function. It can take up to 48 hours for a query to be processed and for the results, known as outputs, to be delivered. The limited number of queries and delay in response mimics real world constraints.
 
@@ -12,12 +12,12 @@ After each submission, the data set is analysed to find a combination of inputs 
 
 ## Composition
 
-The data set is located in the [data]{./data/} directory and consists of 16 files covering the inputs and outputs for the eight underlying functions. The naming convention for each file is as follows:
+The data set is located in the [data](./data/) directory and consists of 16 files covering the inputs and outputs for the eight underlying functions. The naming convention for each file is as follows:
 
 ```
 function_{function_ID}_{I/O}.npy
 ```
-where `function_ID` corresponds to the eight functions, and `I/O` is either `inputs` or `outputs`. The files are in [NumPy binary file format]{https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html}.
+where `function_ID` corresponds to the eight functions, and `I/O` is either `inputs` or `outputs`. The files are in [NumPy binary file format](https://numpy.org/doc/stable/reference/generated/numpy.lib.format.html).
 
 The inputs are matrices of size `(N, d)` where `N` is the total number of data points and `d` is the number of features. The values of each element are real numbers normalised to lie in the range [0, 1). The outputs are vectors of length `N`, that can consist of any real number.
 
@@ -34,7 +34,7 @@ The composition of the data set is summarised in the table below:
 | 7 | 6 | 30 | Hyperparameters for a machine learning model. | Model's performance score. |
 | 8 | 8 | 40 | Hyperparameters for a machine learning model. | Model's accuracy score. |
 
-After each submission is processed, the inputs and outputs are appended to their corresponding files. Therefore the aforementioned data files contain the complete data set after all evaluations. The notebook for each function, located in the [notebooks]{./notebooks/} directory, presents the evolving analysis on a weekly basis by slicing the data set.
+After each submission is processed, the inputs and outputs are appended to their corresponding files. Therefore the aforementioned data files contain the complete data set after all evaluations. The notebook for each function, located in the [notebooks](./notebooks/) directory, presents the evolving analysis on a weekly basis by slicing the data set.
 
 The points that comprise the initial data set are not uniformly distributed across any of the function domains. The main purpose of this exercise is to find the global maximum, and given the limited number of queries, no attempt is made outside of the exploratory phases to map out the domain. Therefore, the data set can consist of large regions of the domain that have not been evaluated.
 
@@ -46,7 +46,7 @@ The data set is anonymised and feature names have been removed. Therefore, there
 
 A variety of machine learning techniques were employed to generate candidate points for weekly queries. Although either Bayesian Optimisation with a Gaussian Process Surrogate model or a spatial sampling method was initially used to explore each function's domain, these later evolved to other machine learning techniques with each successive query. There was no uniform model used across all functions, neither was there a uniform strategy over time. The weekly outputs from each model dictated the direction of the subsequent analysis.
 
-A high-level summary is presented here. Further details can be found in the individual [notebooks]{./notebooks/}.
+A high-level summary is presented here. Further details can be found in the individual [notebooks](./notebooks/).
 
 With the exception of functions 5 & 6, which were deemed to have clear regions that could be immediately exploited, an initial process of exploration was conducted. This exploratory phase lasted between 3 and six weeks, and employed either Bayesian Optimisation with a Guassian Process surrogate model and Upper Confidence Bound (UCB) acquisition function with exploration parameter `k` = 1.96, or a spatial sampling method. This later evolved to either using Bayesian Optimisation with a more exploitative acquisition function such as Probabilty of Improvement (PI), or employing a different machine learning model.
 
@@ -66,6 +66,6 @@ The data set is not substantially large enough, nor does it cover enough of the 
 
 ## Distribution & Maintenance
 
-The data set is available in the [data]{./data/} directory within this repository and is maintained by the owner of the repository, Hassan Chagani. The data remains available in this repository for all users unless its removal is requested by Imperial College London or any other party. Requests for removal will be considered on a case-by-case basis.
+The data set is available in the [data](./data/) directory within this repository and is maintained by the owner of the repository, Hassan Chagani. The data remains available in this repository for all users unless its removal is requested by Imperial College London or any other party. Requests for removal will be considered on a case-by-case basis.
 
 Although the data set is maintained here to illustrate the strategies employed during the BBO challenge, it is not envisaged that there will be any updates to it in the future as the project has been completed. Therefore, it is in its final form.
