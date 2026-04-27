@@ -1,6 +1,6 @@
 # Model Card for Black Box Optimisation Capstone Project OctoBBO
 
-This model card contains information on the machine learning models used for the Black Box Optimisation (BBO) capstone project that forms part of the requirements for the Professional Certificate of Machine Learning and Artificial Intelligence at Imperial College London.
+This model card contains information on the machine learning models used for the Black Box Optimisation (BBO) capstone project that forms part of the requirements for the Professional Certificate in Machine Learning and Artificial Intelligence at Imperial College London.
 
 ## Overview
 
@@ -12,7 +12,7 @@ Each week corresponds to an update in version number as strategies change. The f
 
 ## Intended Use
 
-The model is primarily presented as part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). Additionally, the model can be used for educational purposes as an illustration of how to maximise functions hidden behind a black box with few evaluations. Therefore, it is presented as an evolution of strategies over time rather than simply the final result.
+The model is primarily presented as part of the requirements for [Imperial College London's Professional Certificate in Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). Additionally, the model can be used for educational purposes as an illustration of how to maximise functions hidden behind a black box with few evaluations. Therefore, it is presented as an evolution of strategies over time rather than simply the final result.
 
 The strategies presented here cannot be applied directly to maximise other BBO problems. These strategies are presented to invoke ideas and suggest avenues to pursue when presented with other BBO challenges.
 
@@ -89,4 +89,4 @@ By definition, $I = 0$ if there has been no improvement.
 
 The [data set](./data/) used in this strategy, the [notebooks](./notebooks/) containing details of the rationale and models employed in this strategy, and the [source code](./src/bbo/) are available in this repository. This allows for full transparency of the analysis and for it to be reproduced in part or in full. Errors made in the original analysis have been identified.
 
-The strategy, as detailed here, is intended for educational purposes, and to invoke ideas and suggest avenues to pursue for other BBO challenges. Should the same functions be used in a future Capstone project for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai), the information in this repository can be used by students to gain additional information extra to the initial data set, and therefore is potentially an unfair advantage. While the stated aim of this project is to find the global maximum for each function, the secondary goal is to gain practical experience using a wide variety of machine learning models. The data set is available for all to use removing any unfair advantages and it is hoped that the notebooks will encourage experimentation with other models.
+The strategy, as detailed here, is intended for educational purposes, and to invoke ideas and suggest avenues to pursue for other BBO challenges. Should the same functions be used in a future Capstone project for [Imperial College London's Professional Certificate in Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai), the information in this repository can be used by students to gain additional information extra to the initial data set, and therefore is potentially an unfair advantage. While the stated aim of this project is to find the global maximum for each function, the secondary goal is to gain practical experience using a wide variety of machine learning models. The data set is available for all to use removing any unfair advantages and it is hoped that the notebooks will encourage experimentation with other models.

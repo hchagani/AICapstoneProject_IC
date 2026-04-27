@@ -1,10 +1,10 @@
 # Datasheet for Black Box Optimisation Capstone Project Data Set
 
-This datasheet contains information on the data set used for the Black Box Optimisation (BBO) capstone project that forms part of the requirements for the Professional Certificate of Machine Learning and Artificial Intelligence at Imperial College London.
+This datasheet contains information on the data set used for the Black Box Optimisation (BBO) capstone project that forms part of the requirements for the Professional Certificate in Machine Learning and Artificial Intelligence at Imperial College London.
 
 ## Motivation
 
-The data set was created for a BBO challenge that forms part of the requirements for [Imperial College London's Professional Certificate of Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). The data set consists of 8 optimisation problems where the underlying functions are unknown. The functions mimic real world problems. The goal is to find the global maxima through limited evaluation of each function.
+The data set was created for a BBO challenge that forms part of the requirements for [Imperial College London's Professional Certificate in Machine Learning and Artificial Intelligence](https://execed-online.imperial.ac.uk/professional-certificate-ml-ai). The data set consists of 8 optimisation problems where the underlying functions are unknown. The functions mimic real world problems. The goal is to find the global maxima through limited evaluation of each function.
 
 Each function consists of two to 8 features, termed inputs. Functions are evaluated by submitting queries consisting of input values. A total of 13 queries, one for each week of the project, can be submitted for each function. It can take up to 48 hours for a query to be processed and for the results, known as outputs, to be delivered. The limited number of queries and delay in response mimics real world constraints.
 
