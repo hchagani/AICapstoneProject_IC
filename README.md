@@ -136,25 +136,59 @@ The input features are four chemical inputs. The output is the yield of a chemic
 
 There is one point with an output that is significantly higher than its surroundings. Based on domain knowledge of the process, one global maximum is expected. Therefore, a policy of exploitation in the region around this point was followed.
 
-### Strategy
+#### Strategy
 1. Initial exploitation & Bayesian Optimisation (Weeks 1-4):
    - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernel.
-   - Used Probability of Improvement (PI) function to exploit region around best observed data point.
+   - Used Probability of Improvement (PI) acquisition function to exploit region around best observed data point.
    - Outputs increased with successive queries. A promising region was identified as having `x2` and `x3` values that lie close to their upper boundaries.
 1. Support Vector Machine (SVM) guided boundary probing (Week 5):
    - Use SVM classification model to identify boundary as mean output.
    - The model separated high and low data points with 100% accuracy.
    - Moved along gradient of decision function in `x2` and `x3` direction to find output had increased from that of the most influential support vector. This confirmed the presence of a promising region at high `x2` and `x3` values.
 1. Combination of GP surrogate with k-nearest neighbours models (Week 6):
-   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and Upper Confidence Bound (UCB) acquisition function. The UCB acquisition function had an additional term to penalise points that lie close to current best observed point to encourage exploration.
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and Upper Confidence Bound (UCB) acquisition function. The UCB acquisition function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
    - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Based Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
    - One of the positional medians from each cluster was chosen as the next point to query.
    - Length scales from the GP models suggested that the output was less sensitive to changes in `x0` and `x1`.
    - Output was low due to high GP uncertainty in unexplored regions. Given that a promising region had been identified, a single peak was expected and the relatively small number of remaining queries, this policy of exploration was discontinued.
 1. Exploitation with Random Forests (RF) ensemble models (Weeks 7-13):
    - RF and extra trees ensembles were investigated as surrogate model replacements for the GP.
-   - RF ensemble models and a combination of Upper Confidence Bound (UCB), Probability of Improvement (PI) and Expected Improvement (EI) acquiisition functions were used a=to assess and select candidate points to query.
+   - RF ensemble models and a combination of Upper Confidence Bound (UCB), Probability of Improvement (PI) and Expected Improvement (EI) acquisition functions were used to assess and select candidate points to query.
    - Means and standard deviations were calculated from the trees that comprised the RF ensemble models.
    - Used hierarchical agglomerative clustering algorithm with distance threshold of $\frac{1}{3}$ to identify clusters. Recursive grid search performed for each cluster to improve resolution.
    - Found best observed point and consistently high outputs at combined high `x2` and `x3` values, in line with conclusions from GP. In this region, the output appears to be insensitive to changes in `x0` and `x1`.
    - Potential second region identified at high `x2` and low `x3` values, which was not investigated further because of limited query budget.
+
+### Function 6
+The input fatures are ingredients for a cake recipe. The output is the combined score based on flavour, consistency, calories, waste and cost as judged by an expert taster.
+
+#### Strategy
+1. Initial exploitation & Bayesian Optimisation (Weeks 1-5):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernel.
+   - Used Probability of Improvement (PI) acquisition function to exploit region around best observed data point.
+   - Recursive grid search performed to improve resolution.
+   - Found best observed point.
+   - Adopted a more exploratory policy in week 5 as Upper Confidence Bound (UCB) acquisition function replaced PI as assessor of candidate points.
+   - Length scales from the GP models suggested that the output was less sensitive to changes in `x0` and `x2`.
+1. Combination of GP surrogate with k-nearest neighbours models (Week 6):
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquistiion function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
+   - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Base Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
+   - The candidate points formed a single cluster and the candidate with the greatest uncertainty was chosen as the next point to query.
+   - Output was low due to high GP uncertainty in explored regions.
+1. Exploration with Extremely Randomised Trees (Extra Trees - ET) and Random Forests (RF) ensemble models (Weeks 7-10):
+   - ET and RF ensembles were investigated as surrogate model replacements for the GP.
+   - The UCB acquisition function was used to assess and select candidate points to query from a recursive grid search.
+   - Investigations of the promising region that had previously been identified indicated that the output may be sensitive to changes in all dimensions, in contrast to the conclusion reached at the end of week 5.
+   - No other promising regions were identified.
+1. Region-based anlaysis with decision trees and GP surrogate models (Week 11):
+   - Returned to a policy of exploitation.
+   - Used decision tree model to partition domain into regions based on observed output values.
+   - Generated candidate points in each region. More candidates were generated in regions with a higher mean output using softmax weighting.
+   - Global GP surrogate model and Expected Improvement (EI) acquisition function were used to assess and select a candidate point to query.
+   - Found to be a promising method for future queries.
+1. Exploitation with RF ensemble models (Weeks 12-13):
+   - Returned to training RF ensembles with the more exploitative PI acquisition function as an assessor of candidate points.
+   - Candidate points chosen using a recursive grid search.
+   - Discovered the instability in the random forests ensemble model as the proposed points varied significantly depending on the random seed used during initialisation. This is likely because of the relatively small number of data points in the dataset relative to the number of dimensions, which can amplify small modelling differences that arise when using different random seeds.
+   - Despite this, a steady improvement in output was witnessed.
+   - The promising region lies in the space around (0.55, 0.4, 0.4, 0.8, 0.15).
