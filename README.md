@@ -134,7 +134,7 @@ All initial data points have a negative output, implying that none of them perfo
 ### Function 5
 The input features are four chemical inputs. The output is the yield of a chemical process in a factory.
 
-There is one point with an output that is significantly higher than its surroundings. Based on domain knowledge of the process, one global maximum is expected. Therefore, a policy of exploitation in the region around this point was followed.
+There is one point with an output that is significantly higher than its surroundings. Based on domain knowledge of the process, one global maximum is expected. Therefore, a policy of exploitation in the region around this point is followed.
 
 #### Strategy
 1. Initial exploitation & Bayesian Optimisation (Weeks 1-4):
@@ -161,6 +161,8 @@ There is one point with an output that is significantly higher than its surround
 
 ### Function 6
 The input fatures are ingredients for a cake recipe. The output is the combined score based on flavour, consistency, calories, waste and cost as judged by an expert taster.
+
+As the features are ingredients for a cake recipe, multiple local maxima are not expected. However, baking a cake is more of an art than a science and therefore the region that contains the maximum may be relatively large. An initial policy of exploitation is adopted.
 
 #### Strategy
 1. Initial exploitation & Bayesian Optimisation (Weeks 1-5):
