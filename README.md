@@ -110,7 +110,7 @@ All initial data points have a negative output, implying that none of them perfo
 
 #### Strategy
 1. Initial exploration (Weeks 1-3):
-   - Sampled points from midpoints of largest empty spaces in each dimension, assuming that independence between features.
+   - Sampled points from midpoints of largest empty spaces in each dimension, assuming independence between features.
    - No other promising regions identified.
 1. Quadratic linear regression (Weeks 4, 6, 7 & 13):
    - Introduced global linear regression models to explain observed data.
@@ -150,7 +150,7 @@ There is one point with an output that is significantly higher than its surround
    - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Based Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
    - One of the positional medians from each cluster was chosen as the next point to query.
    - Length scales from the GP models suggested that the output was less sensitive to changes in `x0` and `x1`.
-   - Output was low due to high GP uncertainty in unexplored regions. Given that a promising region had been identified, a single peak was expected and the relatively small number of remaining queries, this policy of exploration was discontinued.
+   - Output was low. Given that a promising region had been identified, a single peak was expected and the relatively small number of remaining queries, this policy of exploration was discontinued.
 1. Exploitation with Random Forests (RF) ensemble models (Weeks 7-13):
    - RF and extra trees ensembles were investigated as surrogate model replacements for the GP.
    - RF ensemble models and a combination of Upper Confidence Bound (UCB), Probability of Improvement (PI) and Expected Improvement (EI) acquisition functions were used to assess and select candidate points to query.
@@ -176,7 +176,7 @@ As the features are ingredients for a cake recipe, multiple local maxima are not
    - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquistiion function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
    - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Base Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
    - The candidate points formed a single cluster and the candidate with the greatest uncertainty was chosen as the next point to query.
-   - Output was low due to high GP uncertainty in explored regions.
+   - Output was low. No other promising regions were identified.
 1. Exploration with Extremely Randomised Trees (Extra Trees - ET) and Random Forests (RF) ensemble models (Weeks 7-10):
    - ET and RF ensembles were investigated as surrogate model replacements for the GP.
    - The UCB acquisition function was used to assess and select candidate points to query from a recursive grid search.
@@ -194,3 +194,39 @@ As the features are ingredients for a cake recipe, multiple local maxima are not
    - Discovered the instability in the random forests ensemble model as the proposed points varied significantly depending on the random seed used during initialisation. This is likely because of the relatively small number of data points in the dataset relative to the number of dimensions, which can amplify small modelling differences that arise when using different random seeds.
    - Despite this, a steady improvement in output was witnessed.
    - The promising region lies in the space around (0.55, 0.4, 0.4, 0.8, 0.15).
+
+### Function 7
+The input features are a machine learning model's hyperparameters. The output is the model's performance score.
+
+There is one point with an output that is significantly higher than its surroundings. Additionally, there are a handful of data points with relatively high outputs, suggesting that there may be multiple promising areas to explore. An initial policy of exploration is adopted.
+
+#### Strategy
+1. Initial exploration (Weeks 1-3):
+   - Sampled points from midpoints of largest empty spaces in each dimension, assuming independence between features.
+   - One region that warrants further investigation was identified, suggesting that there may be multiple promising regions in the domain.
+1. Initial Bayesian Optimisation (Weeks 4-6):
+   - Adopted Gaussian Process (GP) surrogate models with Matern and Radial Basis Function (RBF) kernels.
+   - Initial length scales from the GP models suggested that the output was less sensitive to changes in `x1`, `x2` and `x5`. By fixing `x1` and `x2`, and allowing `x5` to vary, changes in `x5` appeared to affect the output in the region around the best observed data point.
+   - Used an Upper Confidence Bound (UCB) acquisition function to balance exploration with exploitation in weeks 4-5, and a Probability of Improvement (PI) acquisition function to exploit region around the best observed data point in week 6.
+1. Exploration with Random Forests (RF) ensemble models (Week 7):
+   - RF and extra trees ensembles were investigated as surrogate model replacements for the GP.
+   - The UCB acquisition function was used to assess and select candidate points to query from a recursive grid search.
+   - Significant differences between proposed points when RF ensemble models were initialised with different random seeds indicated that model was unstable.
+   - No other promising regions were identified.
+1. Combination of GP surrogate with k-nearest neighbours models (Week 8):
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquistiion function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
+   - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Base Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
+   - The candidate points formed a single cluster and the candidate with the greatest uncertainty was chosen as the next point to query.
+   - Output was low. No other promising regions were identified.
+1. Neural network models and ensembles (Weeks 9-10):
+   - A variety of neural network layouts and acquisition functions assessed by comparing training and validation loss function outputs with epoch number. Root Mean Square Error (RMSE) was the chosen loss function metric.
+   - After selecting a layout, the ensemble of neural network models was trained on all the data.
+   - Generated candidate points according to Latin Hypercube algorithm to provide better coverage of domain with fewer samples.
+   - Results from ensemble used to select candidate point for queries. Two layouts were tested: 6 -> 6 (Tanh) -> 1 (week 9); and 6 -> 4 (ReLU) -> 3 (ReLU) -> 1 (week 10).
+   - Generalisation was found to be poor as the data set was too small for neural networks and the predicted outputs were unreliable.
+   - No other promising regions identified.
+1. Exploitation with the PI acquisition function (Weeks 11-13):
+   - Returned to GP surrogate models with RBF kernel.
+   - Used PI acquisition function, adopting a strategy of exploitation in promsing regions.
+   - Constructed small grids around points with the highest output and assessed PI scores to determine next query. The grids had no more than two values in any dimension, and represented discretised small perturbations from the observed data points. The bounds for the grid are equal to half the GP's length scales in each dimension, with an upper bound of 0.05.
+   - Found best observed point.
