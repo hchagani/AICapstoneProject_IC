@@ -10,6 +10,7 @@ from sklearn.gaussian_process import (
 )
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
 
+from bbo.clustering import get_agglomerative_clusterer
 from bbo.decision_trees import get_ensemble_stats
 
 
@@ -365,6 +366,26 @@ def find_best_candidates(
     )
 
 
+def get_top_fraction_idx(fraction: float, y_samples: np.ndarray) -> list[int]:
+    """Get list of indices for fraction of high output samples in descending
+    order.
+
+    Args:
+        fraction (float): fraction of high output points to extract. Selects
+          highest output only if set to 0.
+        y_samples (np.ndarray): output values for samples.
+
+    Returns:
+        list of indices sorted by descending output.
+    """
+    # Select indices for high output points and sort in descending order
+    n_samples = len(y_samples)
+    k = max(1, int(np.ceil(fraction * n_samples)))
+    top_idx = np.argpartition(y_samples, -k)[-k:]
+
+    return top_idx[np.argsort(y_samples[top_idx])[::-1]]
+
+
 def suggest_local_candidates(
     x_samples: np.ndarray,
     y_samples: np.ndarray,
@@ -421,5 +442,97 @@ def suggest_local_candidates(
         acq_sorted = acq[sorted_idx]
 
         results.append((current_point, candidates_sorted, acq_sorted))
+
+    return results
+
+
+def grid_search_high_value(
+        x_samples: np.ndarray,
+        y_samples: np.ndarray,
+        model: GaussianProcessRegressor,
+        acq_func: Callable,
+        grd_res: int,
+        fraction: float = 0.0,
+        limit: float = 0.1,
+        **acq_kwargs,
+) -> dict[int, dict]:
+    """Perform grid search on progressively smaller regions until limit reached.
+    The grid search is performed on points with high output. The top fraction of
+    these points are extracted from the supplied samples and a recursive grid
+    search is performed around these points to propose candidates to query.
+
+    Args:
+        x_samples (np.ndarray): input values for samples.
+        y_samples (np.ndarray): output values for samples.
+        model (GaussianProcessRegressor): fitted Gaussian Process surrogate
+          model.
+        acq_func (Callable): acquisition function.
+        grd_res (int): grid resolutions in each dimension.
+        fraction (float): fraction of high output points to explore. Selects
+          highest output point only if set to 0.
+        limit (float): distance of initial boundary around high output points
+          for grid search.
+        **acq_kwargs: keyword arguments for acquisition function.
+
+    Returns:
+        dictionary ordered by cluster label that contains the cluster size,
+          output of highest value point in cluster, proposed point and output
+          of acquisition function.
+    """
+    # Extract samples with high outputs
+    top_idx = get_top_fraction_idx(fraction, y_samples)
+    top_x = x_samples[top_idx]
+
+    # Cluster high output points together if they are close to each other
+    # We do not want to perform unnecessary grid searches around points that
+    # are too close to each other
+    _, n_dimensions = x_samples.shape
+    clusterer = get_agglomerative_clusterer(n_dimensions)
+    labels = clusterer.fit_predict(top_x)
+
+    # Order unique cluster labels by their first appearance amd extract cluster
+    # sizes
+    unique_labels, first_idx, counts = np.unique(
+        labels, return_index=True, return_counts=True
+    )
+    order = np.argsort(first_idx)
+    unique_labels = unique_labels[order]
+    counts = counts[order]
+
+    results = {}
+    for lbl, count in zip(unique_labels, counts):
+        # Find point in cluster with highest output
+        idxs = top_idx[labels==lbl]
+        max_idx = idxs[np.argmax(y_samples[idxs])]
+        selected_point = x_samples[max_idx]
+
+        # Set boundaries for grid search and extract proposed point
+        bounds = [
+            (
+                max(0.0, selected_point[i] - limit),
+                min(1.0, selected_point[i] + limit),
+            ) for i in range(n_dimensions)
+        ]
+        proposed_point = grid_search(
+            model=model,
+            acq_func=acq_func,
+            n_dimensions=n_dimensions,
+            grd_res=grd_res,
+            bounds=bounds,
+            **acq_kwargs,
+        )
+
+        # Get acquisition function output for proposed point
+        mean, std = model.predict(
+            proposed_point.reshape(1, -1), return_std=True
+        )
+        acq_out = acq_func(mean, std, **acq_kwargs)[0]
+
+        results[lbl] = {
+            "cluster_size": count,
+            "max_y": y_samples[max_idx],
+            "acq_out": acq_out,
+            "proposed_point": proposed_point,
+        }
 
     return results
