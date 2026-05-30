@@ -1,4 +1,9 @@
-# AICapstoneProject_IC
+# Black Box Optimisation Machine Learning Project
+
+## Non-Technical Summary
+This project explores black box optimisation, where the details of a function that may describe a physical phenomenon or some other relationship between inputs and an output, is hidden. In this project, there are a limited number of queries that can be submitted. A query is a set of inputs for which the function will return an output. Using this limited information, the aim is to find the combination of inputs that results in the function returning its largest output. This is done by continuously updating the predicted shape of the function after each query.
+
+The analysis and results for this process on 8 different functions, each with different numbers of inputs, are presented in this repository. For every function, a combination of inputs that yielded an output greater than that from the initial data set was found. While these points may not be those that yield the highest output, the analysis presented here shows how to find these combinations of inputs with limited information and large uncertainties.
 
 ## Project Overview
 The Black Box Optimisation (BBO) capstone project consists of 8 optimisation problems where the underlying functions are unknown. The goal is to find the global maxima through limited evaluations of each function. This mirrors the limitations in many real world machine learning challenges, where evaluations can be expensive and extensive searches across the entire phase space are not possible. By identifying regions of interest, and focusing evaluations there, much of the relevant structure of the underlying functions can be inferred and maxima can be identified.
