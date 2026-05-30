@@ -230,3 +230,22 @@ There is one point with an output that is significantly higher than its surround
    - Used PI acquisition function, adopting a strategy of exploitation in promsing regions.
    - Constructed small grids around points with the highest output and assessed PI scores to determine next query. The grids had no more than two values in any dimension, and represented discretised small perturbations from the observed data points. The bounds for the grid are equal to half the GP's length scales in each dimension, with an upper bound of 0.05.
    - Found best observed point.
+
+### Function 8
+The input features are a machine learning model's hyperparameters. The output is the model's accuracy score.
+
+There are a significant number of data points with high outputs and the one that yields the highest output is relatively isolated from its neighbours, indicating that there may be multiple promising regions to explore. The fairly narrow range of outputs indicates that the underlying function is likely to be smooth. An initial policy of exploration is adopted, but is soon abandoned for one of exploitation given the relatively large number of promising regions to investigate.
+
+#### Strategy
+1. Initial exploration (Weeks 1-3):
+   - Sampled points from midpoints of largest empty spaces in each dimension, assuming independence between features.
+   - One region that warrants further investigation was identified, suggesting that there may be multiple promising regions in the domain.
+1. Initial Bayesian Optimisation (Weeks 4-5):
+   - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernels.
+   - Initial length scales from the GP models suggested that the output was less sensitive to changes in `x5` and `x7`. Fixing these features and maximising an Upper Confidence Bound (UCB) acquisition function to find a point to query yielded the highest output seen so far. However, nothing conclusive could be inferred regarding the sentivity of the output to changes in these two features.
+1. Exploitation around points with high output (Weeks 6-13):
+   - Continued with GP surrogate models with RBF kernel.
+   - Extracted fractions of points with highest outputs and used hierarchical agglomerative clustering with distance threshold of $\frac{2}{3}$ to identify clusters.
+   - Performed recursive grid search around point with highest output in each cluster to improve resolution.
+   - Used PI acquisition function, adopting a strategy of exploitation, to obtain a proposed point from each cluster.
+   - Identified multiple promising regions and found best observed point.
