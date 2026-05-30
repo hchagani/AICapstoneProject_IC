@@ -95,7 +95,7 @@ Initial observations of the data suggest that there are two promising regions al
 ### Function 3
 The input features are three compounds in a drug discovery project. The output is the severity of the side effects from different combinations of these compounds.
 
-The outputs have been inverted so they are all negative. Therefore, a higher number corresponds to smaller side effects. Of the intial data points, two high value ones lie near each other indicating the presence of a promising region to explore.
+The outputs have been inverted so they are all negative. Therefore, a higher number corresponds to smaller side effects. Of the initial data points, two high value ones lie near each other indicating the presence of a promising region to explore.
 
 #### Strategy
 1. Initial exploration & Bayesian Optimisation (Weeks 1-6):
@@ -104,14 +104,14 @@ The outputs have been inverted so they are all negative. Therefore, a higher num
    - Identified two promising regions.
 1. Exploitation with the Probability of Improvement (PI) acquisition function (Weeks 7-13):
    - Continued with GP surrogate models with RBF kernel.
-   - Used PI acquisition function, adopting a strategy of exploitation in promsing regions.
+   - Used PI acquisition function, adopting a strategy of exploitation in promising regions.
    - Constructed small grids around points with the highest output and assessed PI scores to determine next query. The grids had no more than two values in any dimension, and represented discretised small perturbations from the observed data points. The bounds for the grid are equal to half the GP's length scales in each dimension, with an upper bound of 0.05.
    - Identified an additional promising region, which was exploited. A local maximum was found here.
 
 ### Function 4
 The input features are four machine learning model hyperparameters. The machine learning model approximates the optimal placing of products across warehouses for a business with high online sales. The output is the difference from the expensive baseline.
 
-All initial data points have a negative output, implying that none of them perform better than the expensive baseline. There is one point that performs signficantly better than the others, around which there may be a promising region to explore.
+All initial data points have a negative output, implying that none of them perform better than the expensive baseline. There is one point that performs significantly better than the others, around which there may be a promising region to explore.
 
 #### Strategy
 1. Initial exploration (Weeks 1-3):
@@ -125,7 +125,7 @@ All initial data points have a negative output, implying that none of them perfo
    - Investigating points along the flattest direction of the model's peak indicated it was likely steep and well-centred.
 1. Bayesian Optimisation (Weeks 5 & 8):
    - Adopted global Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) and Matern kernels.
-   - Upper Confidence Bound (UCB) acqusition function were used to assess and select candidate points to query to balance exploration with exploitation.
+   - Upper Confidence Bound (UCB) acquisition function were used to assess and select candidate points to query to balance exploration with exploitation.
    - Recursive grid search performed to improve resolution.
    - No other promising regions identified.
 1. Neural network models and ensembles (Weeks 9-12):
@@ -165,7 +165,7 @@ There is one point with an output that is significantly higher than its surround
    - Potential second region identified at high `x2` and low `x3` values, which was not investigated further because of limited query budget.
 
 ### Function 6
-The input fatures are ingredients for a cake recipe. The output is the combined score based on flavour, consistency, calories, waste and cost as judged by an expert taster.
+The input features are ingredients for a cake recipe. The output is the combined score based on flavour, consistency, calories, waste and cost as judged by an expert taster.
 
 As the features are ingredients for a cake recipe, multiple local maxima are not expected. However, baking a cake is more of an art than a science and therefore the region that contains the maximum may be relatively large. An initial policy of exploitation is adopted.
 
@@ -178,7 +178,7 @@ As the features are ingredients for a cake recipe, multiple local maxima are not
    - Adopted a more exploratory policy in week 5 as Upper Confidence Bound (UCB) acquisition function replaced PI as assessor of candidate points.
    - Length scales from the GP models suggested that the output was less sensitive to changes in `x0` and `x2`.
 1. Combination of GP surrogate with k-nearest neighbours models (Week 6):
-   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquistiion function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquisition function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
    - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Base Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
    - The candidate points formed a single cluster and the candidate with the greatest uncertainty was chosen as the next point to query.
    - Output was low. No other promising regions were identified.
@@ -187,7 +187,7 @@ As the features are ingredients for a cake recipe, multiple local maxima are not
    - The UCB acquisition function was used to assess and select candidate points to query from a recursive grid search.
    - Investigations of the promising region that had previously been identified indicated that the output may be sensitive to changes in all dimensions, in contrast to the conclusion reached at the end of week 5.
    - No other promising regions were identified.
-1. Region-based anlaysis with decision trees and GP surrogate models (Week 11):
+1. Region-based analysis with decision trees and GP surrogate models (Week 11):
    - Returned to a policy of exploitation.
    - Used decision tree model to partition domain into regions based on observed output values.
    - Generated candidate points in each region. More candidates were generated in regions with a higher mean output using softmax weighting.
@@ -219,7 +219,7 @@ There is one point with an output that is significantly higher than its surround
    - Significant differences between proposed points when RF ensemble models were initialised with different random seeds indicated that model was unstable.
    - No other promising regions were identified.
 1. Combination of GP surrogate with k-nearest neighbours models (Week 8):
-   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquistiion function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
+   - Generated random sets of candidates across the domain which were assessed with a GP surrogate model with RBF kernel and UCB acquisition function. The UCB acquisition function had an additional term to penalise points that lay close to the current best observed point to encourage exploration.
    - Best 5 candidates from each iteration were selected and divided into clusters using the Density-Base Spatial Clustering of Applications with Noise (DBSCAN) algorithm. The distance threshold was determined by plotting the distances of each point to its 5th nearest neighbour and estimating the point at which this distance changed significantly (indicated by the position of the elbow).
    - The candidate points formed a single cluster and the candidate with the greatest uncertainty was chosen as the next point to query.
    - Output was low. No other promising regions were identified.
@@ -232,7 +232,7 @@ There is one point with an output that is significantly higher than its surround
    - No other promising regions identified.
 1. Exploitation with the PI acquisition function (Weeks 11-13):
    - Returned to GP surrogate models with RBF kernel.
-   - Used PI acquisition function, adopting a strategy of exploitation in promsing regions.
+   - Used PI acquisition function, adopting a strategy of exploitation in promising regions.
    - Constructed small grids around points with the highest output and assessed PI scores to determine next query. The grids had no more than two values in any dimension, and represented discretised small perturbations from the observed data points. The bounds for the grid are equal to half the GP's length scales in each dimension, with an upper bound of 0.05.
    - Found best observed point.
 
@@ -247,7 +247,7 @@ There are a significant number of data points with high outputs and the one that
    - One region that warrants further investigation was identified, suggesting that there may be multiple promising regions in the domain.
 1. Initial Bayesian Optimisation (Weeks 4-5):
    - Adopted Gaussian Process (GP) surrogate models with Radial Basis Function (RBF) kernels.
-   - Initial length scales from the GP models suggested that the output was less sensitive to changes in `x5` and `x7`. Fixing these features and maximising an Upper Confidence Bound (UCB) acquisition function to find a point to query yielded the highest output seen so far. However, nothing conclusive could be inferred regarding the sentivity of the output to changes in these two features.
+   - Initial length scales from the GP models suggested that the output was less sensitive to changes in `x5` and `x7`. Fixing these features and maximising an Upper Confidence Bound (UCB) acquisition function to find a point to query yielded the highest output seen so far. However, nothing conclusive could be inferred regarding the sensitivity of the output to changes in these two features.
 1. Exploitation around points with high output (Weeks 6-13):
    - Continued with GP surrogate models with RBF kernel.
    - Extracted fractions of points with highest outputs and used hierarchical agglomerative clustering with distance threshold of $\frac{2}{3}$ to identify clusters.

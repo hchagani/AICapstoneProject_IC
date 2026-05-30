@@ -25,7 +25,7 @@ The composition of the data set is summarised in the table below:
 
 | Function ID | Number of Features | Initial Data Set Size | Input Description | Output Description |
 | :-: | :-: | :-: | --- | --- |
-| 1 | 2 | 10 | Axes of an area with contamination sources. | Strengh of contamination. |
+| 1 | 2 | 10 | Axes of an area with contamination sources. | Strength of contamination. |
 | 2 | 2 | 10 | Machine learning model parameters. | Log likelihood score. |
 | 3 | 3 | 15 | Strength of compounds in a drug discovery project. | Inverted severity of side-effects. |
 | 4 | 4 | 30 | Hyperparameters for machine learning model that approximates optimal placing of products across warehouses for a business with high online sales. | Difference from expensive baseline. |
@@ -48,7 +48,7 @@ A variety of machine learning techniques were employed to generate candidate poi
 
 A high-level summary is presented here. Further details can be found in the individual [notebooks](./notebooks/).
 
-With the exception of functions 5 & 6, which were deemed to have clear regions that could be immediately exploited, an initial process of exploration was conducted. This exploratory phase lasted between 3 and six weeks, and employed either Bayesian Optimisation with a Guassian Process surrogate model and Upper Confidence Bound (UCB) acquisition function with exploration parameter `k` = 1.96, or a spatial sampling method. This later evolved to either using Bayesian Optimisation with a more exploitative acquisition function such as Probabilty of Improvement (PI), or employing a different machine learning model.
+With the exception of functions 5 & 6, which were deemed to have clear regions that could be immediately exploited, an initial process of exploration was conducted. This exploratory phase lasted between 3 and six weeks, and employed either Bayesian Optimisation with a Gaussian Process surrogate model and Upper Confidence Bound (UCB) acquisition function with exploration parameter `k` = 1.96, or a spatial sampling method. This later evolved to either using Bayesian Optimisation with a more exploitative acquisition function such as Probability of Improvement (PI), or employing a different machine learning model.
 
 Other machine learning models that were employed include the combination of classification and regression Gaussian Process surrogate models (function 1), linear regression (function 4), neural networks (functions 4 & 7), decision trees (function 2), random forests ensemble models (functions 5, 6 & 7), and support vector machines to identify low and high output regions (function 5). These had varying degrees of success, but were all used to generate candidate queries at some point during the analysis.
 
@@ -62,7 +62,7 @@ The data included is in the same format that was supplied. While the format has 
 
 The data set is supplied with the intention to reproduce the strategies employed during this BBO challenge. In this context, it is used in the notebooks for each function, which detail a week-by-week evolution of the analysis of the data after each submission.
 
-The data set is not substantially large enough, nor does it cover enough of the domain to be described as representative. Therefore, it is not suitable for determing the shape of the underlying function to any degree of certainty.
+The data set is not substantially large enough, nor does it cover enough of the domain to be described as representative. Therefore, it is not suitable for determining the shape of the underlying function to any degree of certainty.
 
 ## Distribution & Maintenance
 
